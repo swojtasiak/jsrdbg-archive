@@ -1,19 +1,21 @@
-From 1329e0c831036a3a4d5f553d44098ab794f6a560 Mon Sep 17 00:00:00 2001
+From 03b6d5e1198237bdd0b1aa0a77ef458819b3cc13 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?S=C5=82awomir=20Wojtasiak?= <slawomir@wojtasiak.com>
 Date: Sun, 12 Apr 2015 11:28:53 +0200
-Subject: [PATCH] integration with jsrdbg
+Subject: [PATCH] gjs - jsrdbg integration
 
 ---
- Makefile.am        |   6 +-
- configure.ac       |   1 +
- gjs/console.cpp    |  53 ++++++++++-
- gjs/context.cpp    |   7 ++
- gjs/context.h      |   2 +
- gjs/debugger.cpp   | 275 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- gjs/debugger.h     |  72 ++++++++++++++
- gjs/gjs.h          |   1 +
- gjs/jsapi-util.cpp |  11 +--
- 9 files changed, 417 insertions(+), 11 deletions(-)
+ Makefile.am             |   6 +-
+ configure.ac            |   1 +
+ gjs-1.0.pc.in           |   2 +-
+ gjs-internals-1.0.pc.in |   2 +-
+ gjs/console.cpp         |  53 +++++++++-
+ gjs/context.cpp         |   7 ++
+ gjs/context.h           |   2 +
+ gjs/debugger.cpp        | 275 ++++++++++++++++++++++++++++++++++++++++++++++++
+ gjs/debugger.h          |  72 +++++++++++++
+ gjs/gjs.h               |   1 +
+ gjs/jsapi-util.cpp      |  11 +-
+ 11 files changed, 419 insertions(+), 13 deletions(-)
  create mode 100644 gjs/debugger.cpp
  create mode 100644 gjs/debugger.h
 
@@ -67,6 +69,32 @@ index 6efd58d..ede0658 100644
  
  # Optional cairo dep (enabled by default)
  AC_ARG_WITH(cairo,
+diff --git a/gjs-1.0.pc.in b/gjs-1.0.pc.in
+index 8a5d47b..d702f57 100644
+--- a/gjs-1.0.pc.in
++++ b/gjs-1.0.pc.in
+@@ -10,7 +10,7 @@ gjs_console=${bindir}/gjs-console
+ 
+ Cflags: -I${includedir}/gjs-1.0
+ Requires: gobject-2.0
+-Requires.private: gobject-introspection-1.0 mozjs-24
++Requires.private: gobject-introspection-1.0 mozjs-24 libjsrdbg
+ Libs: -L${libdir} -lgjs
+ 
+ Name: gjs-1.0
+diff --git a/gjs-internals-1.0.pc.in b/gjs-internals-1.0.pc.in
+index 4d88d82..655d3b0 100644
+--- a/gjs-internals-1.0.pc.in
++++ b/gjs-internals-1.0.pc.in
+@@ -9,7 +9,7 @@ datadir=@datadir@
+ jsdir=@gjsjsdir@
+ 
+ Cflags: -I${includedir}/gjs-1.0
+-Requires: gjs-1.0 gobject-introspection-1.0 mozjs-24
++Requires: gjs-1.0 gobject-introspection-1.0 mozjs-24 libjsrdbg
+ 
+ Name: gjs-internals-1.0
+ Description: Internal API for gjs (for modules and embedders); uses mozjs
 diff --git a/gjs/console.cpp b/gjs/console.cpp
 index 411a753..d3bf0f3 100644
 --- a/gjs/console.cpp
